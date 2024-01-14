@@ -1,5 +1,6 @@
 {
-  "delay": 1000,
+  "delayMin": 1000,
+  "delayMax": 10000,
   "amountInMin": 0.0000001,
   "amountInMax": 0.000001,
   "randomize": true,

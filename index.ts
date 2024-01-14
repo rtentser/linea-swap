@@ -10,6 +10,8 @@ import {
   parseUnits,
 } from "ethers";
 import * as fs from "fs/promises";
+import { sleep } from "ts-delay";
+
 import * as networks from "./config/networks.json";
 import * as swapConfig from "./config/swap.json";
 
@@ -110,6 +112,10 @@ const swap = async (
 };
 
 const randomizeNumber = (min: number, max: number) => {
+  return Math.random() * (max - min) + min;
+};
+
+const randomizeEther = (min: number, max: number) => {
   // Floor to 18 decimals
   return Math.floor(10 ** 18 * (Math.random() * (max - min) + min)) / 10 ** 18;
 };
@@ -134,7 +140,7 @@ const main = async () => {
   (swapConfig.randomize ? randomizeArray(wallets) : wallets).forEach(
     async (wallet) => {
       const amountIn = parseEther(
-        randomizeNumber(swapConfig.amountInMin, swapConfig.amountInMax).toFixed(
+        randomizeEther(swapConfig.amountInMin, swapConfig.amountInMax).toFixed(
           18
         )
       );
@@ -142,6 +148,9 @@ const main = async () => {
       const amountOut = await pool.getAmountOut(weth, amountIn, wallet.address);
 
       await swap(router, wallet, amountIn, amountOut, weth, poolAddress);
+      await sleep(
+        Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax))
+      );
     }
   );
 };
