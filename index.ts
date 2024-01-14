@@ -137,7 +137,9 @@ const randomizeEther = (min: number, max: number) => {
 };
 
 const main = async () => {
-  const wallets = await getWallets(provider);
+  let wallets = await getWallets(provider);
+  if (swapConfig.randomize) wallets = randomizeArray(wallets);
+
   const router = await getContract(network.router, routerPath, provider);
   const factory = await getContract(
     network.factory,
@@ -153,22 +155,22 @@ const main = async () => {
     provider
   );
 
-  (swapConfig.randomize ? randomizeArray(wallets) : wallets).forEach(
-    async (wallet) => {
-      const amountIn = parseEther(
-        randomizeEther(swapConfig.amountInMin, swapConfig.amountInMax).toFixed(
-          18
-        )
-      );
+  for (let i = 0; i < wallets.length; i++) {
+    const amountIn = parseEther(
+      randomizeEther(swapConfig.amountInMin, swapConfig.amountInMax).toFixed(18)
+    );
 
-      const amountOut = await pool.getAmountOut(weth, amountIn, wallet.address);
+    const amountOut = await pool.getAmountOut(
+      weth,
+      amountIn,
+      wallets[i].address
+    );
 
-      await swap(router, wallet, amountIn, amountOut, weth, poolAddress);
-      await sleep(
-        Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax))
-      );
-    }
-  );
+    await swap(router, wallets[i], amountIn, amountOut, weth, poolAddress);
+    await sleep(
+      Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax))
+    );
+  }
 };
 
 main().catch((e) => console.error(e));
