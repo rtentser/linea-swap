@@ -10,10 +10,18 @@ import {
 } from "ethers";
 import * as fs from "fs/promises";
 import * as networks from "./config/networks.json";
+import * as swapConfig from "./config/swap.json";
 
-const network = networks["LineaTestnet"];
+interface Network {
+  name: string;
+  router: string;
+  factory: string;
+  usdc: string;
+}
 
-const provider = getDefaultProvider("linea-goerli");
+const network: Network = networks[swapConfig.network as keyof object];
+
+const provider = getDefaultProvider(network.name);
 
 const routerPath = "./abis/SyncSwapRouter.json";
 
