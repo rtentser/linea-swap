@@ -133,7 +133,10 @@ const randomizeNumber = (min: number, max: number) => {
 
 const randomizeEther = (min: number, max: number) => {
   // Floor to 18 decimals
-  return Math.floor(10 ** 18 * (Math.random() * (max - min) + min)) / 10 ** 18;
+  return (
+    Math.floor(10 ** 18 * (Math.random() * (max + 1 / 10 ** 18 - min) + min)) /
+    10 ** 18
+  );
 };
 
 const main = async () => {
