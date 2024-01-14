@@ -168,7 +168,7 @@ const main = async () => {
 
     await swap(router, wallets[i], amountIn, amountOut, weth, poolAddress);
     await sleep(
-      Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax))
+      Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax + 1))
     );
   }
 };
