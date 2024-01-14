@@ -7,6 +7,7 @@ import {
   ZeroAddress,
   getDefaultProvider,
   parseEther,
+  parseUnits,
 } from "ethers";
 import * as fs from "fs/promises";
 import * as networks from "./config/networks.json";
@@ -108,6 +109,11 @@ const swap = async (
   console.log(tx);
 };
 
+const randomizeNumber = (min: number, max: number) => {
+  // Floor to 18 decimals
+  return Math.floor(10 ** 18 * (Math.random() * (max - min) + min)) / 10 ** 18;
+};
+
 const main = async () => {
   const wallets = await getWallets(provider);
   const router = await getContract(network.router, routerPath, provider);
@@ -127,19 +133,15 @@ const main = async () => {
 
   (swapConfig.randomize ? randomizeArray(wallets) : wallets).forEach(
     async (wallet) => {
-      const price = await pool.getAmountOut(
-        weth,
-        parseEther("0.0000001"),
-        wallet.address
+      const amountIn = parseEther(
+        randomizeNumber(swapConfig.amountInMin, swapConfig.amountInMax).toFixed(
+          18
+        )
       );
-      await swap(
-        router,
-        wallet,
-        parseEther("0.0000001"),
-        price,
-        weth,
-        poolAddress
-      );
+
+      const amountOut = await pool.getAmountOut(weth, amountIn, wallet.address);
+
+      await swap(router, wallet, amountIn, amountOut, weth, poolAddress);
     }
   );
 };
