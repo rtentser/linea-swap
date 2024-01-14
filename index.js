@@ -105,8 +105,12 @@ const swap = (router, runner, amountIn, amountOutMin, weth, pool) => __awaiter(v
         },
     ];
     try {
+        const estimateGas = yield router.connect(runner).swap.estimateGas(paths, amountOutMin, BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600), {
+            value: amountIn,
+        });
         const response = yield router.connect(runner).swap(paths, amountOutMin, BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600), {
             value: amountIn,
+            gas: (estimateGas * BigInt(120)) / BigInt(100), // Add 20% buffer for gas
         });
         const tx = yield response.wait();
         console.log("Wallet:", runner.address);

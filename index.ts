@@ -99,12 +99,23 @@ const swap = async (
   ];
 
   try {
+    const estimateGas = await (
+      router.connect(runner) as Contract
+    ).swap.estimateGas(
+      paths,
+      amountOutMin,
+      BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600),
+      {
+        value: amountIn,
+      }
+    );
     const response = await (router.connect(runner) as Contract).swap(
       paths,
       amountOutMin,
       BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600),
       {
         value: amountIn,
+        gas: (estimateGas * BigInt(120)) / BigInt(100), // Add 20% buffer for gas
       }
     );
     const tx = await response.wait();
