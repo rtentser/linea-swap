@@ -5,9 +5,9 @@ import {
   Provider,
   Wallet,
   ZeroAddress,
+  formatUnits,
   getDefaultProvider,
   parseEther,
-  parseUnits,
 } from "ethers";
 import * as fs from "fs/promises";
 import { sleep } from "ts-delay";
@@ -98,17 +98,33 @@ const swap = async (
     },
   ];
 
-  const response = await (router.connect(runner) as Contract).swap(
-    paths,
-    amountOutMin,
-    BigInt(Math.floor(Date.now() / 1000)) + BigInt(1800),
-    {
-      value: amountIn,
-    }
-  );
+  try {
+    const response = await (router.connect(runner) as Contract).swap(
+      paths,
+      amountOutMin,
+      BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600),
+      {
+        value: amountIn,
+      }
+    );
+    const tx = await response.wait();
 
-  let tx = await response.wait();
-  console.log(tx);
+    console.log("Wallet:", runner.address);
+    console.log("Pool:", "ETH/USDC");
+    console.log("AmountIn:", formatUnits(amountIn.toString()));
+    console.log("AmountOut:", formatUnits(amountOutMin.toString(), 6), "USDC");
+    console.log("Transaction:", tx.hash);
+  } catch (e) {
+    console.error("Wallet:", runner.address);
+    console.error("Pool:", "ETH/USDC");
+    console.error("AmountIn:", formatUnits(amountIn.toString()), "ETH");
+    console.error(
+      "AmountOut:",
+      formatUnits(amountOutMin.toString(), 6),
+      "USDC"
+    );
+    console.error(e);
+  }
 };
 
 const randomizeNumber = (min: number, max: number) => {
@@ -155,4 +171,4 @@ const main = async () => {
   );
 };
 
-main();
+main().catch((e) => console.error(e));
