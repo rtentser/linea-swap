@@ -36,6 +36,18 @@ const getWallets = async (provider: Provider) => {
   return wallets;
 };
 
+const randomizeArray = (a: any[]) => {
+  let ra = new Array();
+
+  while (a.length) {
+    const index = Math.floor(Math.random() * a.length);
+    ra.push(a[index]);
+    a.splice(index, 1);
+  }
+
+  return ra;
+};
+
 const getAbi = async (path: string) => {
   const file = await fs.open(path);
   const content = await file.readFile({ encoding: "utf-8" });
@@ -106,7 +118,6 @@ const main = async () => {
   );
 
   const weth = await router.wETH();
-
   const poolAddress = await factory.getPool(weth, network.usdc);
   const pool = await getContract(
     poolAddress,
@@ -114,22 +125,23 @@ const main = async () => {
     provider
   );
 
-  wallets.forEach(async (wallet) => {
-    const price = await pool.getAmountOut(
-      weth,
-      parseEther("0.0000001"),
-      wallets[0].address
-    );
-
-    await swap(
-      router,
-      wallet,
-      parseEther("0.0000001"),
-      price,
-      weth,
-      poolAddress
-    );
-  });
+  (swapConfig.randomize ? randomizeArray(wallets) : wallets).forEach(
+    async (wallet) => {
+      const price = await pool.getAmountOut(
+        weth,
+        parseEther("0.0000001"),
+        wallet.address
+      );
+      await swap(
+        router,
+        wallet,
+        parseEther("0.0000001"),
+        price,
+        weth,
+        poolAddress
+      );
+    }
+  );
 };
 
 main();
