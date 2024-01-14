@@ -1,0 +1,14 @@
+{
+  "Linea": {
+    "network": "linea",
+    "router": "0x80e38291e06339d10aab483c65695d004dbd5c69",
+    "factory": "0x37BAc764494c8db4e54BDE72f6965beA9fa0AC2d",
+    "usdc": "0x176211869ca2b568f2a7d4ee941e073a821ee1ff"
+  },
+  "LineaTestnet": {
+    "network": "linea-goerli",
+    "router": "0x80e38291e06339d10aab483c65695d004dbd5c69",
+    "factory": "0x37BAc764494c8db4e54BDE72f6965beA9fa0AC2d",
+    "usdc": "0xf56dc6695cf1f5c364edebc7dc7077ac9b586068"
+  }
+}
