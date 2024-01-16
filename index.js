@@ -108,22 +108,24 @@ const swap = (router, runner, amountIn, amountOutMin, weth, pool) => __awaiter(v
         const estimateGas = yield router.connect(runner).swap.estimateGas(paths, amountOutMin, BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600), {
             value: amountIn,
         });
+        console.log("Estimated");
         const response = yield router.connect(runner).swap(paths, amountOutMin, BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600), {
             value: amountIn,
             gas: (estimateGas * BigInt(120)) / BigInt(100), // Add 20% buffer for gas
         });
+        console.log("Transaction:", response.hash);
         const tx = yield response.wait();
         console.log("Wallet:", runner.address);
         console.log("Pool:", "ETH/USDC");
         console.log("AmountIn:", (0, ethers_1.formatUnits)(amountIn.toString()));
-        console.log("AmountOut:", (0, ethers_1.formatUnits)(amountOutMin.toString(), 6), "USDC");
+        console.log("AmountOut:", (0, ethers_1.formatUnits)(amountOutMin.toString(), 6), "USDT");
         console.log("Transaction:", tx.hash);
     }
     catch (e) {
         console.error("Wallet:", runner.address);
-        console.error("Pool:", "ETH/USDC");
+        console.error("Pool:", "ETH/USDT");
         console.error("AmountIn:", (0, ethers_1.formatUnits)(amountIn.toString()), "ETH");
-        console.error("AmountOut:", (0, ethers_1.formatUnits)(amountOutMin.toString(), 6), "USDC");
+        console.error("AmountOut:", (0, ethers_1.formatUnits)(amountOutMin.toString(), 6), "USDT");
         console.error(e);
     }
 });
@@ -142,12 +144,12 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const router = yield getContract(network.router, routerPath, provider);
     const factory = yield getContract(network.factory, "./abis/SyncSwapClassicPoolFactory.json", provider);
     const weth = yield router.wETH();
-    const poolAddress = yield factory.getPool(weth, network.usdc);
+    const poolAddress = yield factory.getPool(weth, network.usdt);
     const pool = yield getContract(poolAddress, "./abis/SyncSwapClassicPool.json", provider);
     for (let i = 0; i < wallets.length; i++) {
         const amountIn = (0, ethers_1.parseEther)(randomizeEther(swapConfig.amountInMin, swapConfig.amountInMax).toFixed(18));
         const amountOut = yield pool.getAmountOut(weth, amountIn, wallets[i].address);
-        yield swap(router, wallets[i], amountIn, amountOut, weth, poolAddress);
+        yield swap(router, wallets[i], amountIn, amountOut, ethers_1.ZeroAddress, poolAddress);
         yield (0, ts_delay_1.sleep)(Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax + 1)));
     }
 });

@@ -5,6 +5,7 @@ import {
   Provider,
   Wallet,
   ZeroAddress,
+  ethers,
   formatUnits,
   getDefaultProvider,
   parseEther,
@@ -19,7 +20,7 @@ interface Network {
   name: string;
   router: string;
   factory: string;
-  usdc: string;
+  usdt: string;
 }
 
 const network: Network = networks[swapConfig.network as keyof object];
@@ -109,6 +110,7 @@ const swap = async (
         value: amountIn,
       }
     );
+    console.log("Estimated");
     const response = await (router.connect(runner) as Contract).swap(
       paths,
       amountOutMin,
@@ -118,21 +120,22 @@ const swap = async (
         gas: (estimateGas * BigInt(120)) / BigInt(100), // Add 20% buffer for gas
       }
     );
+    console.log("Transaction:", response.hash);
     const tx = await response.wait();
 
     console.log("Wallet:", runner.address);
     console.log("Pool:", "ETH/USDC");
     console.log("AmountIn:", formatUnits(amountIn.toString()));
-    console.log("AmountOut:", formatUnits(amountOutMin.toString(), 6), "USDC");
+    console.log("AmountOut:", formatUnits(amountOutMin.toString(), 6), "USDT");
     console.log("Transaction:", tx.hash);
   } catch (e) {
     console.error("Wallet:", runner.address);
-    console.error("Pool:", "ETH/USDC");
+    console.error("Pool:", "ETH/USDT");
     console.error("AmountIn:", formatUnits(amountIn.toString()), "ETH");
     console.error(
       "AmountOut:",
       formatUnits(amountOutMin.toString(), 6),
-      "USDC"
+      "USDT"
     );
     console.error(e);
   }
@@ -162,7 +165,7 @@ const main = async () => {
   );
 
   const weth = await router.wETH();
-  const poolAddress = await factory.getPool(weth, network.usdc);
+  const poolAddress = await factory.getPool(weth, network.usdt);
   const pool = await getContract(
     poolAddress,
     "./abis/SyncSwapClassicPool.json",
@@ -180,7 +183,14 @@ const main = async () => {
       wallets[i].address
     );
 
-    await swap(router, wallets[i], amountIn, amountOut, weth, poolAddress);
+    await swap(
+      router,
+      wallets[i],
+      amountIn,
+      amountOut,
+      ZeroAddress,
+      poolAddress
+    );
     await sleep(
       Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax + 1))
     );
