@@ -1,8 +1,8 @@
 {
   "delayMin": 1000,
   "delayMax": 10000,
-  "amountInMin": 0.0000001,
-  "amountInMax": 0.000001,
+  "amount0utMin": 0.1,
+  "amountOutMax": 1,
   "randomize": true,
   "network": "LineaTestnet"
 }

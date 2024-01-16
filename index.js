@@ -86,7 +86,7 @@ const getAbi = (path) => __awaiter(void 0, void 0, void 0, function* () {
 const getContract = (address, pathToAbi, provider) => __awaiter(void 0, void 0, void 0, function* () {
     return new ethers_1.Contract(address, yield getAbi(pathToAbi), provider);
 });
-const swap = (router, runner, amountIn, amountOutMin, weth, pool) => __awaiter(void 0, void 0, void 0, function* () {
+const swap = (router, runner, amountIn, amountOut, weth, pool) => __awaiter(void 0, void 0, void 0, function* () {
     const withdrawMode = 1;
     const swapData = ethers_1.AbiCoder.defaultAbiCoder().encode(["address", "address", "uint8"], [weth, runner.address, withdrawMode]);
     const steps = [
@@ -106,34 +106,29 @@ const swap = (router, runner, amountIn, amountOutMin, weth, pool) => __awaiter(v
     ];
     try {
         const gasPrice = (yield provider.getFeeData()).gasPrice;
-        const response = yield router.connect(runner).swap(paths, amountOutMin, BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600), {
+        const response = yield router.connect(runner).swap(paths, BigInt(amountOut * 10 ** 6), BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600), {
             gasPrice: gasPrice,
             value: amountIn,
         });
         console.log("Transaction:", response.hash);
         console.log("Waiting for receipt...");
-        const tx = yield response.wait();
+        yield response.wait();
         console.log("Receipt received\n");
         console.log("Wallet:", runner.address);
         console.log("Pool:", "ETH/USDC");
-        console.log("AmountIn:", (0, ethers_1.formatUnits)(amountIn.toString()));
-        console.log("AmountOut:", (0, ethers_1.formatUnits)(amountOutMin.toString(), 6), "USDT");
+        console.log("Swap amount:", amountOut, "USD");
+        console.log("ETH spent:", (0, ethers_1.formatUnits)(amountIn.toString()), "ETH");
     }
     catch (e) {
         console.error("Wallet:", runner.address);
         console.error("Pool:", "ETH/USDT");
-        console.error("AmountIn:", (0, ethers_1.formatUnits)(amountIn.toString()), "ETH");
-        console.error("AmountOut:", (0, ethers_1.formatUnits)(amountOutMin.toString(), 6), "USDT");
+        console.error("SwapAmount:", amountOut, "USD");
+        console.log("ETH spent:", (0, ethers_1.formatUnits)(amountIn.toString()), "ETH");
         console.error(e);
     }
 });
 const randomizeNumber = (min, max) => {
     return Math.random() * (max - min) + min;
-};
-const randomizeEther = (min, max) => {
-    // Floor to 18 decimals
-    return (Math.floor(10 ** 18 * (Math.random() * (max + 1 / 10 ** 18 - min) + min)) /
-        10 ** 18);
 };
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     let wallets = yield getWallets(provider);
@@ -145,9 +140,10 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const poolAddress = yield factory.getPool(weth, network.usdt);
     const pool = yield getContract(poolAddress, "./abis/SyncSwapClassicPool.json", provider);
     for (let i = 0; i < wallets.length; i++) {
-        const amountIn = (0, ethers_1.parseEther)(randomizeEther(swapConfig.amountInMin, swapConfig.amountInMax).toFixed(18));
-        const amountOut = yield pool.getAmountOut(weth, amountIn, wallets[i].address);
-        yield swap(router, wallets[i], amountIn, amountOut, ethers_1.ZeroAddress, poolAddress);
+        const amountOut = Math.floor(randomizeNumber(swapConfig.amount0utMin, swapConfig.amountOutMax + 0.01) * 100) / 100;
+        const amountIn = yield pool.getAmountOut(network.usdt, BigInt(amountOut * 10 ** 6), wallets[i].address);
+        yield swap(router, wallets[i], amountIn, amountOut, ethers_1.ZeroAddress, // Using zero address for native swaps
+        poolAddress);
         yield (0, ts_delay_1.sleep)(Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax + 1)));
     }
 });

@@ -5,8 +5,8 @@ Put into `config/wallets.txt` private keys for your wallets (one key per line).
 Put into `config/swap.json` parameters for your swap:
 - `delayMin`: minimum time between wallets (in ms)
 - `delayMax`: maximum time between wallets (in ms)
-- `amountInMin`: minimum spends (in ETH)
-- `amountInMax`: maximum spends (in ETH)
+- `amountOutMin`: minimum swap amount (in USD)
+- `amountOutMax`: maximum swao amount (in USD)
 - `randomize`: if `true`, randomize wallets order, if `false`, don't
 - `network`: in which network to trade ("Linea" or "LineaTestnet" for now. If you want to add new networks, put their data into `config/networks.json`)
 

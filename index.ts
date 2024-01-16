@@ -5,7 +5,6 @@ import {
   Provider,
   Wallet,
   ZeroAddress,
-  ethers,
   formatUnits,
   getDefaultProvider,
   parseEther,
@@ -71,7 +70,7 @@ const swap = async (
   router: Contract,
   runner: Wallet,
   amountIn: BigInt,
-  amountOutMin: BigInt,
+  amountOut: number,
   weth: string,
   pool: string
 ) => {
@@ -103,7 +102,7 @@ const swap = async (
     const gasPrice = (await provider.getFeeData()).gasPrice;
     const response = await (router.connect(runner) as Contract).swap(
       paths,
-      amountOutMin,
+      BigInt(amountOut * 10 ** 6),
       BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600),
       {
         gasPrice: gasPrice,
@@ -114,37 +113,25 @@ const swap = async (
     console.log("Transaction:", response.hash);
     console.log("Waiting for receipt...");
 
-    const tx = await response.wait();
+    await response.wait();
 
     console.log("Receipt received\n");
 
     console.log("Wallet:", runner.address);
     console.log("Pool:", "ETH/USDC");
-    console.log("AmountIn:", formatUnits(amountIn.toString()));
-    console.log("AmountOut:", formatUnits(amountOutMin.toString(), 6), "USDT");
+    console.log("Swap amount:", amountOut, "USD");
+    console.log("ETH spent:", formatUnits(amountIn.toString()), "ETH");
   } catch (e) {
     console.error("Wallet:", runner.address);
     console.error("Pool:", "ETH/USDT");
-    console.error("AmountIn:", formatUnits(amountIn.toString()), "ETH");
-    console.error(
-      "AmountOut:",
-      formatUnits(amountOutMin.toString(), 6),
-      "USDT"
-    );
+    console.error("SwapAmount:", amountOut, "USD");
+    console.log("ETH spent:", formatUnits(amountIn.toString()), "ETH");
     console.error(e);
   }
 };
 
 const randomizeNumber = (min: number, max: number) => {
   return Math.random() * (max - min) + min;
-};
-
-const randomizeEther = (min: number, max: number) => {
-  // Floor to 18 decimals
-  return (
-    Math.floor(10 ** 18 * (Math.random() * (max + 1 / 10 ** 18 - min) + min)) /
-    10 ** 18
-  );
 };
 
 const main = async () => {
@@ -167,13 +154,17 @@ const main = async () => {
   );
 
   for (let i = 0; i < wallets.length; i++) {
-    const amountIn = parseEther(
-      randomizeEther(swapConfig.amountInMin, swapConfig.amountInMax).toFixed(18)
-    );
+    const amountOut =
+      Math.floor(
+        randomizeNumber(
+          swapConfig.amount0utMin,
+          swapConfig.amountOutMax + 0.01
+        ) * 100
+      ) / 100;
 
-    const amountOut = await pool.getAmountOut(
-      weth,
-      amountIn,
+    const amountIn = await pool.getAmountOut(
+      network.usdt,
+      BigInt(amountOut * 10 ** 6),
       wallets[i].address
     );
 
@@ -182,7 +173,7 @@ const main = async () => {
       wallets[i],
       amountIn,
       amountOut,
-      ZeroAddress,
+      ZeroAddress, // Using zero address for native swaps
       poolAddress
     );
     await sleep(
