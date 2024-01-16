@@ -100,34 +100,28 @@ const swap = async (
   ];
 
   try {
-    const estimateGas = await (
-      router.connect(runner) as Contract
-    ).swap.estimateGas(
-      paths,
-      amountOutMin,
-      BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600),
-      {
-        value: amountIn,
-      }
-    );
-    console.log("Estimated");
+    const gasPrice = (await provider.getFeeData()).gasPrice;
     const response = await (router.connect(runner) as Contract).swap(
       paths,
       amountOutMin,
       BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600),
       {
+        gasPrice: gasPrice,
         value: amountIn,
-        gas: (estimateGas * BigInt(120)) / BigInt(100), // Add 20% buffer for gas
       }
     );
+
     console.log("Transaction:", response.hash);
+    console.log("Waiting for receipt...");
+
     const tx = await response.wait();
+
+    console.log("Receipt received\n");
 
     console.log("Wallet:", runner.address);
     console.log("Pool:", "ETH/USDC");
     console.log("AmountIn:", formatUnits(amountIn.toString()));
     console.log("AmountOut:", formatUnits(amountOutMin.toString(), 6), "USDT");
-    console.log("Transaction:", tx.hash);
   } catch (e) {
     console.error("Wallet:", runner.address);
     console.error("Pool:", "ETH/USDT");

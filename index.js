@@ -105,21 +105,19 @@ const swap = (router, runner, amountIn, amountOutMin, weth, pool) => __awaiter(v
         },
     ];
     try {
-        const estimateGas = yield router.connect(runner).swap.estimateGas(paths, amountOutMin, BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600), {
-            value: amountIn,
-        });
-        console.log("Estimated");
+        const gasPrice = (yield provider.getFeeData()).gasPrice;
         const response = yield router.connect(runner).swap(paths, amountOutMin, BigInt(Math.floor(Date.now() / 1000)) + BigInt(3600), {
+            gasPrice: gasPrice,
             value: amountIn,
-            gas: (estimateGas * BigInt(120)) / BigInt(100), // Add 20% buffer for gas
         });
         console.log("Transaction:", response.hash);
+        console.log("Waiting for receipt...");
         const tx = yield response.wait();
+        console.log("Receipt received\n");
         console.log("Wallet:", runner.address);
         console.log("Pool:", "ETH/USDC");
         console.log("AmountIn:", (0, ethers_1.formatUnits)(amountIn.toString()));
         console.log("AmountOut:", (0, ethers_1.formatUnits)(amountOutMin.toString(), 6), "USDT");
-        console.log("Transaction:", tx.hash);
     }
     catch (e) {
         console.error("Wallet:", runner.address);
