@@ -141,7 +141,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield getContract(poolAddress, "./abis/SyncSwapClassicPool.json", provider);
     for (let i = 0; i < wallets.length; i++) {
         const amountOut = Math.floor(randomizeNumber(swapConfig.amount0utMin, swapConfig.amountOutMax + 0.01) * 100) / 100;
-        const amountIn = yield pool.getAmountOut(network.usdt, BigInt(amountOut * 10 ** 6), wallets[i].address);
+        const amountIn = yield pool.getAmountIn(network.usdt, BigInt(amountOut * 10 ** 6), wallets[i].address);
         yield swap(router, wallets[i], amountIn, amountOut, ethers_1.ZeroAddress, // Using zero address for native swaps
         poolAddress);
         const delay = Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax + 1));

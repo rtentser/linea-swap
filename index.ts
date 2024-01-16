@@ -162,7 +162,7 @@ const main = async () => {
         ) * 100
       ) / 100;
 
-    const amountIn = await pool.getAmountOut(
+    const amountIn = await pool.getAmountIn(
       network.usdt,
       BigInt(amountOut * 10 ** 6),
       wallets[i].address
