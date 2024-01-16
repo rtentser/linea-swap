@@ -144,7 +144,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         const amountIn = yield pool.getAmountOut(network.usdt, BigInt(amountOut * 10 ** 6), wallets[i].address);
         yield swap(router, wallets[i], amountIn, amountOut, ethers_1.ZeroAddress, // Using zero address for native swaps
         poolAddress);
-        yield (0, ts_delay_1.sleep)(Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax + 1)));
+        const delay = Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax + 1));
+        console.log("Sleeping for", delay / 1000, "seconds");
+        yield (0, ts_delay_1.sleep)(delay);
     }
 });
 main().catch((e) => console.error(e));

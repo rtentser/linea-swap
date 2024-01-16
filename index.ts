@@ -176,9 +176,12 @@ const main = async () => {
       ZeroAddress, // Using zero address for native swaps
       poolAddress
     );
-    await sleep(
-      Math.floor(randomizeNumber(swapConfig.delayMin, swapConfig.delayMax + 1))
+
+    const delay = Math.floor(
+      randomizeNumber(swapConfig.delayMin, swapConfig.delayMax + 1)
     );
+    console.log("Sleeping for", delay / 1000, "seconds");
+    await sleep(delay);
   }
 };
 
