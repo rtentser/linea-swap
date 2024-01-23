@@ -118,7 +118,7 @@ const swap = async (
     console.log("Receipt received\n");
 
     console.log("Wallet:", runner.address);
-    console.log("Pool:", "ETH/USDC");
+    console.log("Pool:", "ETH/USDT");
     console.log("Swap amount:", amountOut, "USD");
     console.log("ETH spent:", formatUnits(amountIn.toString()), "ETH");
   } catch (e) {

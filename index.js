@@ -115,7 +115,7 @@ const swap = (router, runner, amountIn, amountOut, weth, pool) => __awaiter(void
         yield response.wait();
         console.log("Receipt received\n");
         console.log("Wallet:", runner.address);
-        console.log("Pool:", "ETH/USDC");
+        console.log("Pool:", "ETH/USDT");
         console.log("Swap amount:", amountOut, "USD");
         console.log("ETH spent:", (0, ethers_1.formatUnits)(amountIn.toString()), "ETH");
     }
