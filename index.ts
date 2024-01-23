@@ -93,7 +93,7 @@ const swap = async (
   const paths = [
     {
       steps: steps,
-      tokenIn: weth,
+      tokenIn: ZeroAddress,
       amountIn: amountIn,
     },
   ];
@@ -173,7 +173,7 @@ const main = async () => {
       wallets[i],
       amountIn,
       amountOut,
-      ZeroAddress, // Using zero address for native swaps
+      weth, // Using zero address for native swaps
       poolAddress
     );
 
